@@ -237,40 +237,28 @@ function debounce (func, threshold, execAsap) {
 
 /***/ },
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 module.exports = function normalizeComponent (
-  name,
-  scriptExports,
+  rawScriptExports,
   compiledTemplate,
   scopeId,
   cssModules
 ) {
-  scriptExports = scriptExports || {}
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
 
   // ES6 modules interop
-  var type = typeof scriptExports.default
+  var type = typeof rawScriptExports.default
   if (type === 'object' || type === 'function') {
-    // check named exports
-    if (false) {
-      if (Object.keys(scriptExports).some(function (key) {
-        return key !== 'default' && key !== '__esModule'
-      })) {
-        console.error('named exports are not supported in *.vue files.')
-      }
-    }
-    scriptExports = scriptExports.default
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
   }
 
   // Vue.extend constructor export interop
   var options = typeof scriptExports === 'function'
     ? scriptExports.options
     : scriptExports
-
-  // default name option based on filename
-  if (options.name == null) {
-    options.name = name
-  }
 
   // render functions
   if (compiledTemplate) {
@@ -293,6 +281,7 @@ module.exports = function normalizeComponent (
   }
 
   return {
+    esModule: esModule,
     exports: scriptExports,
     options: options
   }
@@ -5520,205 +5509,185 @@ var Subheader = {
 
 
 /* harmony default export */ exports["a"] = {
-  name: 'datatable',
+    name: 'datatable',
 
-  mixins: [__WEBPACK_IMPORTED_MODULE_0__mixins_head__["a" /* default */], __WEBPACK_IMPORTED_MODULE_1__mixins_body__["a" /* default */], __WEBPACK_IMPORTED_MODULE_2__mixins_foot__["a" /* default */]],
+    mixins: [__WEBPACK_IMPORTED_MODULE_0__mixins_head__["a" /* default */], __WEBPACK_IMPORTED_MODULE_1__mixins_body__["a" /* default */], __WEBPACK_IMPORTED_MODULE_2__mixins_foot__["a" /* default */]],
 
-  data: function data () {
-    return {
-      desc: null,
-      page: 1,
-      sorting: null,
-      all: false
-    }
-  },
-
-  props: {
-    headers: {
-      type: Array,
-      default: function () { return []; }
-    },
-    headerText: {
-      type: String,
-      default: 'text'
-    },
-    hideActions: Boolean,
-    items: {
-      type: Array,
-      default: function () { return []; }
-    },
-    itemValue: {
-      default: 'value'
-    },
-    noDataText: {
-      type: String,
-      default: 'No data available in table'
-    },
-    noResultsText: {
-      type: String,
-      default: 'No matching records found'
-    },
-    rowsPerPage: {
-      type: [Number, String],
-      default: 5
-    },
-    rowsPerPageItems: {
-      type: Array,
-      default: function default$1 () {
-        return [
-          5,
-          10,
-          25,
-          { text: 'All', value: -1 }
-        ]
-      }
-    },
-    rowsPerPageText: {
-      type: String,
-      default: 'Rows per page:'
-    },
-    selectAll: Boolean,
-    search: {
-      required: false
-    },
-    filter: {
-      type: Function,
-      default: function (val, search) {
-        return val !== null &&
-          ['undefined', 'boolean'].indexOf(typeof val) === -1 &&
-          val.toString().toLowerCase().indexOf(search) !== -1
-      }
-    },
-    value: {
-      type: Array,
-      default: function () { return []; }
-    }
-  },
-
-  computed: {
-    indeterminate: function indeterminate () {
-      return this.selectAll && this.someItems && !this.everyItem
-    },
-    everyItem: function everyItem () {
-      var this$1 = this;
-
-      return this.value.every(function (i) { return i[this$1.itemValue]; })
-    },
-    someItems: function someItems () {
-      var this$1 = this;
-
-      return this.value.some(function (i) { return i[this$1.itemValue]; })
-    },
-    pageStart: function pageStart () {
-      var page = this.rowsPerPage === Object(this.rowsPerPage)
-        ? this.rowsPerPage.value
-        : this.rowsPerPage
-      return page === -1 ? 0 : (this.page - 1) * page
-    },
-    pageStop: function pageStop () {
-      var page = this.rowsPerPage === Object(this.rowsPerPage)
-        ? this.rowsPerPage.value
-        : this.rowsPerPage
-      return page === -1 ? this.value.length : this.page * page
-    },
-    filteredItems: function filteredItems () {
-      var this$1 = this;
-
-      var items = this.value.slice()
-      var hasSearch = typeof this.search !== 'undefined' && this.search !== null
-
-      if (hasSearch) {
-        var search = this.search.toString().toLowerCase()
-
-        items = items.filter(function (i) { return Object.keys(i).some(function (j) { return this$1.filter(i[j], search); }); })
-      }
-
-      items = items.sort(function (a, b) {
-        var sortA = a[this$1.sorting]
-        var sortB = b[this$1.sorting]
-
-        if (this$1.desc) {
-          if (sortA < sortB) { return 1 }
-          if (sortA > sortB) { return -1 }
-          return 0
-        } else {
-          if (sortA < sortB) { return -1 }
-          if (sortA > sortB) { return 1 }
-          return 0
+    data: function data () {
+        return {
+            desc: null,
+            page: 1,
+            sorting: null,
+            all: false
         }
-      })
-
-      return this.hideActions ? items : items.slice(this.pageStart, this.pageStop)
-    }
-  },
-
-  watch: {
-    rowsPerPage: function rowsPerPage () {
-      this.page = 1
     },
-    indeterminate: function indeterminate (val) {
-      if (val) { this.all = true }
-    },
-    someItems: function someItems (val) {
-      if (!val) { this.all = false }
-    },
-    search: function search () {
-      this.page = 1
-    }
-  },
 
-  methods: {
-    sort: function sort (index) {
-      if (this.sorting === null) {
-        this.sorting = index
-        this.desc = true
-      } else if (this.sorting === index && this.desc) {
-        this.desc = false
-      } else if (this.sorting !== index) {
-        this.sorting = index
-        this.desc = true
-      } else {
-        this.sorting = null
-        this.desc = null
-      }
-    },
-    genTR: function genTR (children, data) {
-      if ( data === void 0 ) data = {};
-
-      return this.$createElement('tr', data, children)
-    },
-    toggle: function toggle (val) {
-      var this$1 = this;
-
-      this.all = val
-
-      this.$emit('input', this.value.map(function (i) {
-        i[this$1.itemValue] = this$1.filteredItems.includes(i) ? val : false
-
-        return i
-      }))
-    }
-  },
-
-  mounted: function mounted () {
-    var header = this.headers.find(function (h) { return !('sortable' in h) || h.sortable; })
-    this.sorting = !this.sorting && header ? header.value : this.sorting
-  },
-
-  render: function render (h) {
-    return h('v-table-overflow', {}, [
-      h('table', {
-        'class': {
-          'datatable table': true,
-          'datatable--select-all': this.selectAll
+    props: {
+        headers: {
+            type: Array,
+            default: function () { return []; }
+        },
+        headerText: {
+            type: String,
+            default: 'text'
+        },
+        hideActions: Boolean,
+        items: {
+            type: Array,
+            default: function () { return []; }
+        },
+        itemValue: {
+            default: 'value'
+        },
+        noDataText: {
+            type: String,
+            default: 'No data available in table'
+        },
+        noResultsText: {
+            type: String,
+            default: 'No matching records found'
+        },
+        rowsPerPage: {
+            type: [Number, String],
+            default: 5
+        },
+        rowsPerPageItems: {
+            type: Array,
+            default: function default$1 () {
+                return [
+                    5,
+                    10,
+                    25,
+                    { text: 'All', value: -1 }
+                ]
+            }
+        },
+        rowsPerPageText: {
+            type: String,
+            default: 'Rows per page:'
+        },
+        selectAll: Boolean,
+        search: {
+            required: false
+        },
+        filter: {
+            type: Function,
+            default: function (val, search) {
+                return val !== null &&
+                    ['undefined', 'boolean'].indexOf(typeof val) === -1 &&
+                    val.toString().toLowerCase().indexOf(search) !== -1
+            }
+        },
+        value: {
+            type: Array,
+            default: function () { return []; }
         }
-      }, [
-        this.genTHead(),
-        this.genTBody(),
-        this.hideActions ? null : this.genTFoot()
-      ])
-    ])
-  }
+    },
+
+    computed: {
+        indeterminate: function indeterminate () {
+            return this.selectAll && this.someItems && !this.everyItem
+        },
+        everyItem: function everyItem () {
+            var this$1 = this;
+
+            return this.value.every(function (i) { return i[this$1.itemValue]; })
+        },
+        someItems: function someItems () {
+            var this$1 = this;
+
+            return this.value.some(function (i) { return i[this$1.itemValue]; })
+        },
+        pageStart: function pageStart () {
+            var page = this.rowsPerPage === Object(this.rowsPerPage)
+                ? this.rowsPerPage.value
+                : this.rowsPerPage
+            return page === -1 ? 0 : (this.page - 1) * page
+        },
+        pageStop: function pageStop () {
+            var page = this.rowsPerPage === Object(this.rowsPerPage)
+                ? this.rowsPerPage.value
+                : this.rowsPerPage
+            return page === -1 ? this.value.length : this.page * page
+        },
+        filteredItems: function filteredItems () {
+            var items = this.value.slice();
+
+            return this.hideActions ? items : items.slice(this.pageStart, this.pageStop)
+        }
+    },
+
+    watch: {
+        rowsPerPage: function rowsPerPage () {
+            this.page = 1
+        },
+        indeterminate: function indeterminate (val) {
+            if (val) { this.all = true }
+        },
+        someItems: function someItems (val) {
+            if (!val) { this.all = false }
+        },
+        search: function search () {
+            this.page = 1
+        }
+    },
+
+    methods: {
+        sort: function sort (index) {
+            if (this.sorting === null) {
+                this.sorting = index;
+                this.desc = true;
+                this.$emit('sort', index, 'desc');
+            } else if (this.sorting === index && this.desc) {
+                this.desc = false;
+                this.$emit('sort', index, 'asc');
+            } else if (this.sorting !== index) {
+                this.sorting = index;
+                this.desc = true;
+                this.$emit('sort', index, 'desc');
+            } else {
+                this.sorting = null;
+                this.desc = null;
+                this.$emit('sort', null, null);
+            }
+        },
+        genTR: function genTR (children, data) {
+            if ( data === void 0 ) data = {};
+
+            return this.$createElement('tr', data, children)
+        },
+        toggle: function toggle (val) {
+            var this$1 = this;
+
+            this.all = val
+
+            this.$emit('input', this.value.map(function (i) {
+                i[this$1.itemValue] = this$1.filteredItems.includes(i) ? val : false
+
+                return i
+            }))
+        }
+    },
+    //
+    // mounted () {
+    //   const header = this.headers.find(h => !('sortable' in h) || h.sortable)
+    //   this.sorting = !this.sorting && header ? header.value : this.sorting
+    // },
+
+    render: function render (h) {
+        return h('v-table-overflow', {}, [
+            h('table', {
+                'class': {
+                    'datatable table': true,
+                    'datatable--select-all': this.selectAll
+                }
+            }, [
+                this.genTHead(),
+                this.genTBody(),
+                this.hideActions ? null : this.genTFoot()
+            ])
+        ])
+    }
 };
 
 
@@ -7872,12 +7841,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "ButtonDropdown",
   /* script */
   __webpack_require__(101),
   /* template */
-  __webpack_require__(124),
+  __webpack_require__(119),
   /* scopeId */
   null,
   /* cssModules */
@@ -7892,12 +7859,10 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "ButtonToggle",
   /* script */
   __webpack_require__(102),
   /* template */
-  __webpack_require__(119),
+  __webpack_require__(127),
   /* scopeId */
   null,
   /* cssModules */
@@ -7912,12 +7877,10 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "Carousel",
   /* script */
   __webpack_require__(103),
   /* template */
-  __webpack_require__(120),
+  __webpack_require__(122),
   /* scopeId */
   null,
   /* cssModules */
@@ -7932,12 +7895,10 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "CarouselItem",
   /* script */
   __webpack_require__(104),
   /* template */
-  __webpack_require__(122),
+  __webpack_require__(121),
   /* scopeId */
   null,
   /* cssModules */
@@ -7952,12 +7913,10 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "ExpansionPanelContent",
   /* script */
   __webpack_require__(105),
   /* template */
-  __webpack_require__(125),
+  __webpack_require__(123),
   /* scopeId */
   null,
   /* cssModules */
@@ -7972,12 +7931,10 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "Pagination",
   /* script */
   __webpack_require__(106),
   /* template */
-  __webpack_require__(127),
+  __webpack_require__(124),
   /* scopeId */
   null,
   /* cssModules */
@@ -7992,12 +7949,10 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "Parallax",
   /* script */
   __webpack_require__(107),
   /* template */
-  __webpack_require__(123),
+  __webpack_require__(125),
   /* scopeId */
   null,
   /* cssModules */
@@ -8012,12 +7967,10 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "ProgressCircular",
   /* script */
   __webpack_require__(108),
   /* template */
-  __webpack_require__(121),
+  __webpack_require__(120),
   /* scopeId */
   null,
   /* cssModules */
@@ -8032,8 +7985,6 @@ module.exports = Component.exports
 /***/ function(module, exports, __webpack_require__) {
 
 var Component = __webpack_require__(2)(
-  /* name */
-  "ProgressLinear",
   /* script */
   __webpack_require__(109),
   /* template */
@@ -8049,176 +8000,6 @@ module.exports = Component.exports
 
 /***/ },
 /* 119 */
-/***/ function(module, exports) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "btn-toggle",
-    class: _vm.classes
-  }, _vm._l((_vm.options), function(option, index) {
-    return _c('v-btn', {
-      attrs: {
-        "data-selected": _vm.isSelected(option),
-        "data-index": index,
-        "data-only-child": _vm.isSelected(option) && (!_vm.multiple || _vm.inputValue.length === 1),
-        "flat": "flat"
-      },
-      nativeOn: {
-        "click": function($event) {
-          $event.stopPropagation();
-          _vm.updateValue(option)
-        }
-      }
-    }, [(option.text) ? _c('span', {
-      domProps: {
-        "textContent": _vm._s(option.text)
-      }
-    }) : _vm._e(), (option.icon) ? _c('v-icon', [_vm._v(_vm._s(option.icon))]) : _vm._e()], 1)
-  }))
-},staticRenderFns: []}
-
-/***/ },
-/* 120 */
-/***/ function(module, exports) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "carousel"
-  }, [_c('div', {
-    staticClass: "carousel__left"
-  }, [_c('v-btn', {
-    attrs: {
-      "icon": "icon"
-    },
-    nativeOn: {
-      "click": function($event) {
-        $event.stopPropagation();
-        _vm.prev($event)
-      }
-    }
-  }, [_c('v-icon', [_vm._v("chevron_left")])], 1)], 1), _c('div', {
-    staticClass: "carousel__right"
-  }, [_c('v-btn', {
-    attrs: {
-      "icon": "icon"
-    },
-    nativeOn: {
-      "click": function($event) {
-        $event.stopPropagation();
-        _vm.next($event)
-      }
-    }
-  }, [_c('v-icon', [_vm._v("chevron_right")])], 1)], 1), _c('div', {
-    staticClass: "carousel__controls"
-  }, _vm._l((_vm.items), function(item, index) {
-    return _c('v-btn', {
-      staticClass: "carousel__controls__item",
-      class: {
-        'carousel__controls__item--active': index === _vm.current
-      },
-      attrs: {
-        "icon": "icon"
-      },
-      nativeOn: {
-        "click": function($event) {
-          $event.stopPropagation();
-          _vm.select(index)
-        }
-      }
-    }, [_c('v-icon', [_vm._v(_vm._s(_vm.icon))])], 1)
-  })), _vm._t("default")], 2)
-},staticRenderFns: []}
-
-/***/ },
-/* 121 */
-/***/ function(module, exports) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "progress-circular",
-    class: _vm.classes,
-    style: (_vm.styles)
-  }, [_c('svg', {
-    style: (_vm.svgStyles),
-    attrs: {
-      "xmlns": "http://www.w3.org/2000/svg",
-      "height": _vm.svgSize,
-      "width": _vm.svgSize,
-      "viewBox": _vm.viewBox
-    }
-  }, [(!_vm.indeterminate) ? _c('circle', {
-    staticClass: "progress-circular__underlay",
-    attrs: {
-      "fill": "transparent",
-      "cx": _vm.cxy,
-      "cy": _vm.cxy,
-      "r": _vm.radius,
-      "stroke-width": _vm.width,
-      "stroke-dasharray": _vm.strokeDashArray,
-      "stroke-dashoffset": 0
-    }
-  }) : _vm._e(), _c('circle', {
-    staticClass: "progress-circular__overlay",
-    attrs: {
-      "fill": _vm.fill,
-      "cx": _vm.cxy,
-      "cy": _vm.cxy,
-      "r": _vm.radius,
-      "stroke-width": _vm.width,
-      "stroke-dasharray": _vm.strokeDashArray,
-      "stroke-dashoffset": _vm.strokeDashOffset
-    }
-  })]), _c('div', {
-    staticClass: "progress-circular__info"
-  }, [_vm._t("default")], 2)])
-},staticRenderFns: []}
-
-/***/ },
-/* 122 */
-/***/ function(module, exports) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c(_vm.computedTransition, {
-    tag: "component"
-  }, [_c('div', {
-    directives: [{
-      name: "show",
-      rawName: "v-show",
-      value: (_vm.active),
-      expression: "active"
-    }],
-    staticClass: "carousel__item",
-    class: {
-      'reverse': _vm.reverse
-    },
-    style: (_vm.styles)
-  }, [_vm._t("default")], 2)])
-},staticRenderFns: []}
-
-/***/ },
-/* 123 */
-/***/ function(module, exports) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "parallax",
-    style: ({
-      minHeight: this.normalizedHeight + 'px'
-    })
-  }, [_c('div', {
-    staticClass: "parallax__image-container"
-  }, [_c('img', {
-    ref: "img",
-    staticClass: "parallax__image",
-    style: (_vm.styles),
-    attrs: {
-      "src": _vm.src
-    }
-  }), _vm._t("default")], 2)])
-},staticRenderFns: []}
-
-/***/ },
-/* 124 */
 /***/ function(module, exports) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -8286,7 +8067,125 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
 },staticRenderFns: []}
 
 /***/ },
-/* 125 */
+/* 120 */
+/***/ function(module, exports) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "progress-circular",
+    class: _vm.classes,
+    style: (_vm.styles)
+  }, [_c('svg', {
+    style: (_vm.svgStyles),
+    attrs: {
+      "xmlns": "http://www.w3.org/2000/svg",
+      "height": _vm.svgSize,
+      "width": _vm.svgSize,
+      "viewBox": _vm.viewBox
+    }
+  }, [(!_vm.indeterminate) ? _c('circle', {
+    staticClass: "progress-circular__underlay",
+    attrs: {
+      "fill": "transparent",
+      "cx": _vm.cxy,
+      "cy": _vm.cxy,
+      "r": _vm.radius,
+      "stroke-width": _vm.width,
+      "stroke-dasharray": _vm.strokeDashArray,
+      "stroke-dashoffset": 0
+    }
+  }) : _vm._e(), _c('circle', {
+    staticClass: "progress-circular__overlay",
+    attrs: {
+      "fill": _vm.fill,
+      "cx": _vm.cxy,
+      "cy": _vm.cxy,
+      "r": _vm.radius,
+      "stroke-width": _vm.width,
+      "stroke-dasharray": _vm.strokeDashArray,
+      "stroke-dashoffset": _vm.strokeDashOffset
+    }
+  })]), _c('div', {
+    staticClass: "progress-circular__info"
+  }, [_vm._t("default")], 2)])
+},staticRenderFns: []}
+
+/***/ },
+/* 121 */
+/***/ function(module, exports) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c(_vm.computedTransition, {
+    tag: "component"
+  }, [_c('div', {
+    directives: [{
+      name: "show",
+      rawName: "v-show",
+      value: (_vm.active),
+      expression: "active"
+    }],
+    staticClass: "carousel__item",
+    class: {
+      'reverse': _vm.reverse
+    },
+    style: (_vm.styles)
+  }, [_vm._t("default")], 2)])
+},staticRenderFns: []}
+
+/***/ },
+/* 122 */
+/***/ function(module, exports) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "carousel"
+  }, [_c('div', {
+    staticClass: "carousel__left"
+  }, [_c('v-btn', {
+    attrs: {
+      "icon": "icon"
+    },
+    nativeOn: {
+      "click": function($event) {
+        $event.stopPropagation();
+        _vm.prev($event)
+      }
+    }
+  }, [_c('v-icon', [_vm._v("chevron_left")])], 1)], 1), _c('div', {
+    staticClass: "carousel__right"
+  }, [_c('v-btn', {
+    attrs: {
+      "icon": "icon"
+    },
+    nativeOn: {
+      "click": function($event) {
+        $event.stopPropagation();
+        _vm.next($event)
+      }
+    }
+  }, [_c('v-icon', [_vm._v("chevron_right")])], 1)], 1), _c('div', {
+    staticClass: "carousel__controls"
+  }, _vm._l((_vm.items), function(item, index) {
+    return _c('v-btn', {
+      staticClass: "carousel__controls__item",
+      class: {
+        'carousel__controls__item--active': index === _vm.current
+      },
+      attrs: {
+        "icon": "icon"
+      },
+      nativeOn: {
+        "click": function($event) {
+          $event.stopPropagation();
+          _vm.select(index)
+        }
+      }
+    }, [_c('v-icon', [_vm._v(_vm._s(_vm.icon))])], 1)
+  })), _vm._t("default")], 2)
+},staticRenderFns: []}
+
+/***/ },
+/* 123 */
 /***/ function(module, exports) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -8328,31 +8227,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
 },staticRenderFns: []}
 
 /***/ },
-/* 126 */
-/***/ function(module, exports) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "progress-linear",
-    class: _vm.classes,
-    style: ({
-      height: _vm.height + 'px'
-    })
-  }, [_c('div', {
-    staticClass: "progress-linear__bar",
-    style: (_vm.styles)
-  }, [_c('v-fade-transition', [(_vm.indeterminate) ? _c('div', {
-    staticClass: "progress-linear__bar__indeterminate"
-  }) : _vm._e()]), _c('v-slide-x-transition', [(!_vm.indeterminate) ? _c('div', {
-    staticClass: "progress-linear__bar__determinate",
-    style: ({
-      width: _vm.value + '%'
-    })
-  }) : _vm._e()])], 1)])
-},staticRenderFns: []}
-
-/***/ },
-/* 127 */
+/* 124 */
 /***/ function(module, exports) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -8412,6 +8287,82 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       }
     }
   }, [_c('v-icon', [_vm._v("chevron_right")])], 1)])], 2)
+},staticRenderFns: []}
+
+/***/ },
+/* 125 */
+/***/ function(module, exports) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "parallax",
+    style: ({
+      minHeight: this.normalizedHeight + 'px'
+    })
+  }, [_c('div', {
+    staticClass: "parallax__image-container"
+  }, [_c('img', {
+    ref: "img",
+    staticClass: "parallax__image",
+    style: (_vm.styles),
+    attrs: {
+      "src": _vm.src
+    }
+  }), _vm._t("default")], 2)])
+},staticRenderFns: []}
+
+/***/ },
+/* 126 */
+/***/ function(module, exports) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "progress-linear",
+    class: _vm.classes,
+    style: ({
+      height: _vm.height + 'px'
+    })
+  }, [_c('div', {
+    staticClass: "progress-linear__bar",
+    style: (_vm.styles)
+  }, [_c('v-fade-transition', [(_vm.indeterminate) ? _c('div', {
+    staticClass: "progress-linear__bar__indeterminate"
+  }) : _vm._e()]), _c('v-slide-x-transition', [(!_vm.indeterminate) ? _c('div', {
+    staticClass: "progress-linear__bar__determinate",
+    style: ({
+      width: _vm.value + '%'
+    })
+  }) : _vm._e()])], 1)])
+},staticRenderFns: []}
+
+/***/ },
+/* 127 */
+/***/ function(module, exports) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "btn-toggle",
+    class: _vm.classes
+  }, _vm._l((_vm.options), function(option, index) {
+    return _c('v-btn', {
+      attrs: {
+        "data-selected": _vm.isSelected(option),
+        "data-index": index,
+        "data-only-child": _vm.isSelected(option) && (!_vm.multiple || _vm.inputValue.length === 1),
+        "flat": "flat"
+      },
+      nativeOn: {
+        "click": function($event) {
+          $event.stopPropagation();
+          _vm.updateValue(option)
+        }
+      }
+    }, [(option.text) ? _c('span', {
+      domProps: {
+        "textContent": _vm._s(option.text)
+      }
+    }) : _vm._e(), (option.icon) ? _c('v-icon', [_vm._v(_vm._s(option.icon))]) : _vm._e()], 1)
+  }))
 },staticRenderFns: []}
 
 /***/ },
